@@ -275,6 +275,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
     env->ReleaseStringUTFChars(jTmp, szTmp);
 
     /* Package Name */
+    /*
     char i = 0;
     jTmp = GetPackageName(env, appContext);
     szTmp = env->GetStringUTFChars(jTmp, NULL);
@@ -284,12 +285,16 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
         ++i;
     } g_szAppName[i] = 0;
     env->ReleaseStringUTFChars(jTmp, szTmp);
+    */
+    strcpy(g_szAppName,"launchly/arm64-v8a");  // pls work
     logger->Info("Determined app info: %s", g_szAppName);
 
+  // we dont need this  
   #ifdef FASTMAN92_CODE
     /* Fastman92 Part */
-    bAML_HasFastmanModified = GetExternalFilesDir_FLA(env, appContext, g_szFastman92Android, sizeof(g_szFastman92Android));
-    __pathback(g_szFastman92Android);
+    // bAML_HasFastmanModified = GetExternalFilesDir_FLA(env, appContext, g_szFastman92Android, sizeof(g_szFastman92Android));
+    // __pathback(g_szFastman92Android);
+    strcpy(g_szFastman92Android, "/storage/emulated/0/games/com.mojang/launchly");
 
     // Android/data/... dir
     snprintf(g_szAndroidDataRootDir, sizeof(g_szAndroidDataRootDir), "%s/", g_szFastman92Android);
@@ -306,22 +311,23 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
     snprintf(g_szCfgPath, sizeof(g_szCfgPath), "%s/configs/", g_szFastman92Android);
     mkdir(g_szCfgPath, 0777);
   #else
+    // no, we do /games/com.mojang/*/
     /* Create a folder in /Android/data/.../ */
-    snprintf(g_szAndroidDataRootDir, sizeof(g_szAndroidDataRootDir), "%s/Android/data/%s/", g_szInternalStoragePath, g_szAppName);
+    snprintf(g_szAndroidDataRootDir, sizeof(g_szAndroidDataRootDir), "%s/games/com.mojang/%s/", g_szInternalStoragePath, g_szAppName);
     DIR* dir = opendir(g_szAndroidDataRootDir);
     if(dir != NULL) closedir(dir);
     else GetExternalFilesDir(env, appContext);
 
     /* Create "mods" folder in /Android/data/.../ */
-    snprintf(g_szModsDir, sizeof(g_szModsDir), "%s/Android/data/%s/mods/", g_szInternalStoragePath, g_szAppName);
+    snprintf(g_szModsDir, sizeof(g_szModsDir), "%s/games/com.mojang/%s/mods/", g_szInternalStoragePath, g_szAppName);
     mkdir(g_szModsDir, 0777);
 
     /* Create "files" folder in /Android/data/.../ */
-    snprintf(g_szAndroidDataDir, sizeof(g_szAndroidDataDir), "%s/Android/data/%s/files/", g_szInternalStoragePath, g_szAppName);
+    snprintf(g_szAndroidDataDir, sizeof(g_szAndroidDataDir), "%s/games/com.mojang/%s/files/", g_szInternalStoragePath, g_szAppName);
     mkdir(g_szAndroidDataDir, 0777); // Who knows, right?
 
     /* Create "configs" folder in /Android/data/.../ */
-    snprintf(g_szCfgPath, sizeof(g_szCfgPath), "%s/Android/data/%s/configs/", g_szInternalStoragePath, g_szAppName);
+    snprintf(g_szCfgPath, sizeof(g_szCfgPath), "%s/games/com.mojang/%s/configs/", g_szInternalStoragePath, g_szAppName);
     mkdir(g_szCfgPath, 0777);
   #endif
 
@@ -433,6 +439,9 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
     if(bHasChangedCfgAuthor) g_pAML->AddFeature("STEALER"); // For fun
     if(!logger->HasOutput()) g_pAML->AddFeature("NOLOGGING");
     
+    char thing[256];
+    snprintf(thing,sizeof(thing),"sz_appname: %s, path: %s", g_szAppName, g_szAndroidDataRootDir);
+    aml->ShowToast(true, thing);
     /* Load news first! */
     if(g_nEnableNews > 0)
     {
@@ -444,7 +453,6 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
             {
                 for(int i = 0; i < g_nEnableNews; ++i)
                 {
-                    aml->ShowToast(true, newsBuf);
                 }
 
                 newsBuf[16] = 0;

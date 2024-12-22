@@ -289,26 +289,30 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
     strcpy(g_szAppName,"launchly/arm64-v8a");  // pls work
     logger->Info("Determined app info: %s", g_szAppName);
 
-  // we dont need this  
+  // we dont need this // update: we do need this
   #ifdef FASTMAN92_CODE
     /* Fastman92 Part */
     // bAML_HasFastmanModified = GetExternalFilesDir_FLA(env, appContext, g_szFastman92Android, sizeof(g_szFastman92Android));
     // __pathback(g_szFastman92Android);
     strcpy(g_szFastman92Android, "/storage/emulated/0/games/com.mojang/launchly");
+    mkdir(g_szFastman92Android, 0777);
+    char arm64dir[256];
+    snprintf(arm64dir, sizeof(arm64dir), "%s/armeabi-v7a", g_szFastman92Android);
+    mkdir(arm64dir, 0777); // idk if this is bloat or na idk how this code works
 
     // Android/data/... dir
-    snprintf(g_szAndroidDataRootDir, sizeof(g_szAndroidDataRootDir), "%s/", g_szFastman92Android);
+    snprintf(g_szAndroidDataRootDir, sizeof(g_szAndroidDataRootDir), "%s/", arm64dir);
     
     // Android/data/.../mods dir
-    snprintf(g_szModsDir, sizeof(g_szModsDir), "%s/mods/", g_szFastman92Android);
+    snprintf(g_szModsDir, sizeof(g_szModsDir), "%s/mods/", arm64dir);
     mkdir(g_szModsDir, 0777);
 
     // Android/data/.../files dir
-    snprintf(g_szAndroidDataDir, sizeof(g_szAndroidDataDir), "%s/files/", g_szFastman92Android);
+    snprintf(g_szAndroidDataDir, sizeof(g_szAndroidDataDir), "%s/files/", arm64dir);
     mkdir(g_szAndroidDataDir, 0777);
     
     // Android/data/.../configs dir
-    snprintf(g_szCfgPath, sizeof(g_szCfgPath), "%s/configs/", g_szFastman92Android);
+    snprintf(g_szCfgPath, sizeof(g_szCfgPath), "%s/configs/", arm64dir);
     mkdir(g_szCfgPath, 0777);
   #else
     // no, we do /games/com.mojang/*/
@@ -337,7 +341,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
     /* AML Config */
     logger->Info("Reading config...");
     cfg->Init();
-    cfg->Bind("Author", "")->SetString("RusJJ aka [-=KILL MAN=-]"); cfg->ClearLast();
+    cfg->Bind("Author", "")->SetString("RusJJ aka [-=KILL MAN=-] and @raspberryepicly (on this fork)"); cfg->ClearLast();
     cfg->Bind("Discord", "")->SetString("https://discord.gg/2MY7W39kBg"); cfg->ClearLast();
     bool bHasChangedCfgAuthor = cfg->IsValueChanged();
     cfg->Bind("Version", "")->SetString(amlmodinfo->VersionString()); cfg->ClearLast();
@@ -441,7 +445,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved)
     
     char thing[256];
     snprintf(thing,sizeof(thing),"sz_appname: %s, path: %s", g_szAppName, g_szAndroidDataRootDir);
-    aml->ShowToast(true, thing);
+    // aml->ShowToast(true, thing);
     /* Load news first! */
     if(g_nEnableNews > 0)
     {
